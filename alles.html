@@ -1,0 +1,138 @@
+<!doctype html>
+<!--
+    Tangram: real-time WebGL rendering for OpenStreetMap
+
+    http://github.com/tangrams/tangram
+    http://mapzen.com
+-->
+<html lang="en-us">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hollands Kroon - Open data kaart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-rc.1/leaflet.css" />
+    <link rel="stylesheet" href="fontawesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="js/leaflet.awesome-markers.css">
+    <style>
+        body {
+            margin: 0px;
+            border: 0px;
+            padding: 0px;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <!-- leaflet -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-rc.1/leaflet.js"></script>
+    <!-- Main tangram library -->
+    <script src="https://mapzen.com/tangram/0.8/tangram.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="js/leaflet.awesome-markers.min.js"></script>
+    <!-- Demo setup -->
+    <script>
+        L.AwesomeMarkers.Icon.prototype.options.prefix = 'fa';
+        var map = L.map('map');
+        var layer = Tangram.leafletLayer({
+            interactive: true
+            , //            scene: 'scene.yaml',
+            scene: 'styles/lego.yaml'
+            , attribution: '<a href="https://mapzen.com/tangram" target="_blank">Tangram</a> | &copy; OSM contributors | <a href="https://mapzen.com/" target="_blank">Mapzen | <a href="https://hollandskroon.nl/" target="_blank">Gemeente Hollands Kroon</a>'
+        });
+        layer.addTo(map);
+        map.setView([52.85943, 4.8193524], 16);
+        var doel = L.AwesomeMarkers.icon({
+            icon: 'fa-futbol-o'
+            , markerColor: 'green'
+        });
+        var motor = L.AwesomeMarkers.icon({
+            icon: 'motorcycle'
+            , markerColor: 'purple'
+        });
+        var eend = L.AwesomeMarkers.icon({
+            icon: 'hand-lizard-o'
+            , markerColor: 'red'
+        });
+        var klim = L.AwesomeMarkers.icon({
+            icon: 'bars'
+            , markerColor: 'blue'
+        });
+        var wat = L.AwesomeMarkers.icon({
+            icon: 'question-circle-o'
+            , markerColor: 'blue'
+        });
+        var huisje = L.AwesomeMarkers.icon({
+            icon: 'home'
+            , markerColor: 'black'
+        });
+        var halfpipe = L.AwesomeMarkers.icon({
+            icon: 'magnet'
+            , markerColor: 'pink'
+        });
+        var duikel = L.AwesomeMarkers.icon({
+            icon: 'arrows-h'
+            , markerColor: 'orange'
+        });
+
+        function onEachFeature(feature, layer) {
+            // does this feature have a property named popupContent?
+            var icon = wat;
+            feature.properties.categorie = feature.properties.categorie.toLowerCase();
+            if (feature.properties.categorie.indexOf("pipe") != -1) {
+                icon = halfpipe;
+            }
+            else if (feature.properties.categorie.indexOf("huisje") != -1) {
+                icon = huisje;
+            }
+            else if (feature.properties.categorie.indexOf("klim") != -1) {
+                icon = klim;
+            }
+            else if (feature.properties.categorie.indexOf("doel") != -1) {
+                icon = doel;
+            }
+            else if (feature.properties.categorie.indexOf("eend") != -1) {
+                icon = eend;
+            }
+            else if (feature.properties.categorie.indexOf("motor") != -1) {
+                icon = motor;
+            }
+            else if (feature.properties.categorie.indexOf("duikel") != -1) {
+                icon = duikel;
+            }
+            
+                var stringText = "<b>" + feature.properties.toesteltyp + "</b><br />";
+                stringText += "Plaatsingsjaar: " + feature.properties.plaatsings + "<br />";
+                if (feature.properties.vrije_valh !== null) {
+                    stringText += "Vrije val hoogte: " + feature.properties.vrije_valh + " meter<br />";
+                }
+                if (feature.properties.aanschafpr !== null) {
+                    stringText += "Aanschafprijs: € " + feature.properties.aanschafpr + "<br />";
+                }
+                if (feature.properties.plaatsings !== null) {
+                    stringText += "Plaatsingsjaar: " + feature.properties.plaatsings + "<br />";
+                }
+                L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
+                    icon: icon
+                }).bindPopup(stringText).addTo(map);
+            
+        }
+        $.getJSON("data/speeltoestellen.geojson", function (data) {
+            $.each(data.features, function (index, geometry) {
+                L.geoJson(geometry, {
+                    onEachFeature: onEachFeature
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
